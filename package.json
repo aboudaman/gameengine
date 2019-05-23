@@ -4,14 +4,17 @@
   "description": "",
   "main": "index.js",
   "scripts": {
-    "start": "budo ./src/main.js:build.js --live",
+    "start": "budo src/main.js:build.js --live -- -t  [ babelify --presets [ @babel/preset-env]]",
     "test": "echo \"Error: no test specified\" && exit 1"
+  },
+  "browserify": {
+    "transform": ["babelify"]
   },
   "author": "",
   "license": "ISC",
   "devDependencies": {
-    "babel-core": "^6.26.3",
-    "babel-preset-env": "^1.7.0",
+    "@babel/core": "^7.4.5",
+    "@babel/preset-env": "^7.4.5",
     "babelify": "^10.0.0",
     "budo": "^11.6.2"
   }
