@@ -1,10 +1,34 @@
-import KeyControls from "../resources/lib/KeyConytrols"
+import gamedep from "./indexMaster"
 
+const {Container, KeyControls, Text, CanvasRenderer} = gamedep;
 
 //Game setup code
-const canvas = document.querySelector("#game canvas");
-const ctx = canvas.getContext("2d");
-const { width: w, height: h } = canvas;
+const w = 640;
+const h = 480;
+const renderer = new CanvasRenderer(w,h);
+document.querySelector("#game").appendChild(renderer.view);
+
+
+//Game Objects
+const scene = new Container();
+
+//Add Text using Text class
+const message = new Text("Gae Engine", {
+    font: "40pt monospace",
+    fill: "red",
+    align: "center"
+});
+message.pos.x = w/2;
+message.pos.y = h/2;
+message.update = function(dt) {
+    this.pos.x -= 100 *dt;
+    if (this.pos.x < -420 ) {
+        this.pos.x = w;
+    }
+}
+scene.add(message);
+
+
 let dt = 0;
 let last = 0;
 const speed = 64;
@@ -27,28 +51,8 @@ function loop(ms) {
     //Time elapsed since last frame
     dt = t - last;
     last = t;
-
-    //Game logic
-    ctx.save();
-
-    x += controls.x;
-    y += controls.y;
-
-    if (!controls.action) {
-        color += 10;
-        if (color > 360) {
-            color -= 360;
-        }
-    }
-
-    //Draw Rectangle
-    ctx.fillStyle = `hsl(${color}, 50%,50%)`;
-    ctx.fillRect(x,y,50,50);
-
-
-
-
-    ctx.restore();
+    scene.update(dt, t);
+    renderer.render(scene);
 }
 
 //Game is running
