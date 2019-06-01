@@ -24,12 +24,16 @@ class CanvasRenderer {
                 }
 
                 //Check what to draw
+                //console.log(child.texture.image);
+                //console.log(child.pos.x);
                 if (child.text) {
                     const {font, fill, align} = child.style;
                     if (font) ctx.font = font;
                     if (fill) ctx.fillStyle = fill;
                     if (align) ctx.textAlign = align;
                     ctx.fillText(child.text, 0, 0);
+                } else if (child.texture) {
+                    ctx.drawImage(child.texture.image, child.pos.x, child.pos.y);
                 }
 
                 if (child.children) {

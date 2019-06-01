@@ -1,6 +1,6 @@
 import gamedep from "./indexMaster"
 
-const {Container, KeyControls, Text, CanvasRenderer} = gamedep;
+const {Container, KeyControls, Text, CanvasRenderer, Texture, Sprite} = gamedep;
 
 //Game setup code
 const w = 640;
@@ -11,9 +11,17 @@ document.querySelector("#game").appendChild(renderer.view);
 
 //Game Objects
 const scene = new Container();
+const planeObj = new Texture("../resources/images/fly.png");
+
+for (let i=0; i < 50; i++) {
+    const plane = new Sprite(planeObj);
+    plane.pos.x = Math.random() * w;
+    plane.pos.y = Math.random() * h;
+    scene.add(plane);
+}
 
 //Add Text using Text class
-const message = new Text("Gae Engine", {
+const message = new Text("Game Engine", {
     font: "40pt monospace",
     fill: "red",
     align: "center"
@@ -21,12 +29,12 @@ const message = new Text("Gae Engine", {
 message.pos.x = w/2;
 message.pos.y = h/2;
 message.update = function(dt) {
-    this.pos.x -= 100 *dt;
+    this.pos.x -= 100 * dt;
     if (this.pos.x < -420 ) {
         this.pos.x = w;
     }
 }
-scene.add(message);
+//scene.add(message);
 
 
 let dt = 0;
@@ -51,7 +59,7 @@ function loop(ms) {
     //Time elapsed since last frame
     dt = t - last;
     last = t;
-    scene.update(dt, t);
+   // scene.update(dt, t);
     renderer.render(scene);
 }
 
