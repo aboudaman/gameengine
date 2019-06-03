@@ -14,6 +14,8 @@ const scene = new Container();
 
 //Game state variables
 let lastShot = 0;
+let lastBaddie = 0;
+let baddieSpeed = 1.0;
 
 // const planeTexture = new Texture("../resources/images/fly.png", {width:"10px", height:"10px"});
 
@@ -21,8 +23,26 @@ let lastShot = 0;
 const textures = {
     plane: new Texture("../resources/images/fly50.png"),
     background: new Texture("../resources/images/BGcanvas.png"),
-    bullet: new Texture("../resources/images/bulletw.png")
+    bullet: new Texture("../resources/images/bulletw.png"),
+    baddie: new Texture("../resources/images/alien.png")
 }
+
+// Add baddies
+const baddies = new Container();
+
+function baddie(x, y, speed) {
+    const baddie = new Sprite(textures.baddie);
+    baddie.pos.x = x;
+    console.log(baddie.pos.x);
+    baddie.pos.y = y;
+    baddie.update = function(dt) {
+        this.pos.x += dt * speed;
+    };
+
+    baddies.add(baddie);
+
+}
+
 
 // Add bullets to a container - several bullets
 const bullets = new Container();
@@ -36,11 +56,6 @@ function fireBullet(x,y) {
         this.pos.x += dt * 400;
     };
     bullets.add(bullet);
-
-    //Filter out bullets when they go past the screen
-    bullets.children = bullets.children.filter(bullet => {
-        return bullet.pos.x < w + 20;
-    })
 }
 
 // ## Set u the plane
@@ -60,9 +75,7 @@ plane.update = function(dt, t) {
     if (pos.x < 0) pos.x = 0;
     if (pos.y < 0) pos.y = 0;
     if (pos.y > h-55) pos.y = h-55;
-
 }
-
 
 //Load up the background
 
@@ -72,9 +85,7 @@ const background = new Sprite(textures.background);
 scene.add(background);
 scene.add(plane);
 scene.add(bullets);
-
-
-
+scene.add(baddies);
 
 // for (let i = 0; i < 5; i++) {
 //     const speed = Math.random() * 150 + 50;
@@ -101,6 +112,7 @@ const message = new Text("Game Engine", {
     fill: "red",
     align: "center"
 });
+
 message.pos.x = w/2;
 message.pos.y = h/2;
 message.update = function(dt) {
@@ -111,13 +123,11 @@ message.update = function(dt) {
 }
 //scene.add(message);
 
-
 let dt = 0;
 let last = 0;
 const speed = 64;
 let p1 = 0;
 let p2 = 0;
-
 
 let x = w / 2;
 let y = h / 2;
@@ -132,11 +142,39 @@ function loop(ms) {
     const t = ms/1000;
 
     //Game logic
+
+
+    //Filter out bullets when they go past the screen
+    bullets.children.forEach(bullet => {
+        if (bullet.pos.x > w + 20) {
+            bullet.dead = true;
+        }
+    })
+
     if (controls.action && t - lastShot > 0.15) {
         lastShot = t;
-        fireBullet(plane.pos.x+45,plane.pos.y+20);
-
+        fireBullet(plane.pos.x + 45,plane.pos.y + 20);
     }
+
+    // Draw the baddies
+    if (t - lastBaddie > baddieSpeed) {
+        lastBaddie = t;
+        const speed = -50 * (Math.random() * Math.random() + 0.5);
+        const position = Math.random() * (h-55);
+        baddie(w, position,speed);
+
+        console.log(`Baddie Speed Before ${baddieSpeed}`);
+        baddieSpeed = baddieSpeed < 0.05 ? 0.06 : baddieSpeed * 0.85 + 0.08;
+        console.log(`Baddie Speed After ${baddieSpeed}`);
+        console.log(`Last Baddie Speed: ${lastBaddie}`);
+        console.log(`Value of t : ${t}`);
+    }
+
+    // Baddie Speed Before 1
+    // main.js:168 Baddie Speed After 0.9299999999999999
+    // main.js:169 Last Baddie Speed: 1.018551
+    // main.js:170 Value of t : 1.018551
+
 
     //Time elapsed since last frame
     dt = t - last;
