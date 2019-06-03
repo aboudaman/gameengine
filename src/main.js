@@ -12,21 +12,54 @@ const controls = new KeyControls();
 //Game Objects
 const scene = new Container();
 
+//Game state variables
+let lastShot = 0;
+
 // const planeTexture = new Texture("../resources/images/fly.png", {width:"10px", height:"10px"});
 
 // ## Setup Textures required for the game ##
 const textures = {
     plane: new Texture("../resources/images/fly50.png"),
-    background: new Texture("../resources/images/BGcanvas.png")
+    background: new Texture("../resources/images/BGcanvas.png"),
+    bullet: new Texture("../resources/images/bulletw.png")
 }
 
+// Add bullets to a container - several bullets
+const bullets = new Container();
+
+// Function to fire bullets
+function fireBullet(x,y) {
+    const bullet = new Sprite(textures.bullet);
+    bullet.pos.x = x;
+    bullet.pos.y = y;
+    bullet.update = function(dt,t) {
+        this.pos.x += dt * 400;
+    };
+    bullets.add(bullet);
+
+    //Filter out bullets when they go past the screen
+    bullets.children = bullets.children.filter(bullet => {
+        return bullet.pos.x < w + 20;
+    })
+}
 
 // ## Set u the plane
 const plane = new Sprite(textures.plane);
-plane.pos.x = 20;
-plane.pos.y = h /2 - 180;
+plane.pos.x = 10;
+plane.pos.y = h / 2 - 180;
+console.log(plane.pos.y);
+console.log(w);
+console.log(w-55);
 
 plane.update = function(dt, t) {
+    const {pos} = this;
+    pos.x += controls.x * dt * 200;
+    pos.y += controls.y * dt * 200;
+
+    if (pos.x > w-55) pos.x = w-55;
+    if (pos.x < 0) pos.x = 0;
+    if (pos.y < 0) pos.y = 0;
+    if (pos.y > h-55) pos.y = h-55;
 
 }
 
@@ -35,9 +68,10 @@ plane.update = function(dt, t) {
 
 const background = new Sprite(textures.background);
 
-// Add the background and the plane
+// Add the background and the plane to the screen
 scene.add(background);
 scene.add(plane);
+scene.add(bullets);
 
 
 
@@ -96,6 +130,13 @@ function loop(ms) {
 
     //set time in seconds
     const t = ms/1000;
+
+    //Game logic
+    if (controls.action && t - lastShot > 0.15) {
+        lastShot = t;
+        fireBullet(plane.pos.x+45,plane.pos.y+20);
+
+    }
 
     //Time elapsed since last frame
     dt = t - last;

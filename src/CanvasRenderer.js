@@ -20,7 +20,7 @@ class CanvasRenderer {
                 ctx.save();
                 //Draw the leaf node
                 if (child.pos) {
-                    ctx.translate(Math.round(child.pos.x), Math.round(child.pos.y))
+                  //  ctx.translate(Math.round(child.pos.x), Math.round(child.pos.y))
                 }
 
                 //Check what to draw
