@@ -31,7 +31,7 @@ class CanvasRenderer {
                     if (font) ctx.font = font;
                     if (fill) ctx.fillStyle = fill;
                     if (align) ctx.textAlign = align;
-                    ctx.fillText(child.text, 0, 0);
+                    ctx.fillText(child.text, child.pos.x, child.pos.y);
                 } else if (child.texture) {
                     ctx.drawImage(child.texture.image, child.pos.x, child.pos.y);
                 }

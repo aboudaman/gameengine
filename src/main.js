@@ -16,7 +16,8 @@ const scene = new Container();
 let lastShot = 0;
 let lastBaddie = 0;
 let baddieSpeed = 1.0;
-
+let scoreAmount = 0;
+let gameOver = false;
 // const planeTexture = new Texture("../resources/images/fly.png", {width:"10px", height:"10px"});
 
 // ## Setup Textures required for the game ##
@@ -24,16 +25,29 @@ const textures = {
     plane: new Texture("../resources/images/fly50.png"),
     background: new Texture("../resources/images/BGcanvas.png"),
     bullet: new Texture("../resources/images/bulletw.png"),
-    baddie: new Texture("../resources/images/alien.png")
+    baddie: new Texture("../resources/images/alien.png"),
+    explosion: new Texture("../resources/images/explosion.png")
 }
 
 // Add baddies
 const baddies = new Container();
 
+//Add function to show explosion
+function explosion(x,y) {
+    const explosion = new Sprite(textures.explosion);
+    explosion.pos.x = x;
+    explosion.pos.y = y;
+    scene.add(explosion);
+
+    setTimeout(function() {
+        explosion.dead = true;
+    }, 350);
+
+}
+
 function baddie(x, y, speed) {
-    const baddie = new Sprite(textures.baddie);
+    const baddie = new Sprite(textures.baddie, 60, 60);
     baddie.pos.x = x;
-    console.log(baddie.pos.x);
     baddie.pos.y = y;
     baddie.update = function(dt) {
         this.pos.x += dt * speed;
@@ -43,13 +57,12 @@ function baddie(x, y, speed) {
 
 }
 
-
 // Add bullets to a container - several bullets
 const bullets = new Container();
 
 // Function to fire bullets
 function fireBullet(x,y) {
-    const bullet = new Sprite(textures.bullet);
+    const bullet = new Sprite(textures.bullet, 25,25);
     bullet.pos.x = x;
     bullet.pos.y = y;
     bullet.update = function(dt,t) {
@@ -59,12 +72,9 @@ function fireBullet(x,y) {
 }
 
 // ## Set u the plane
-const plane = new Sprite(textures.plane);
+const plane = new Sprite(textures.plane, 50, 50);
 plane.pos.x = 10;
 plane.pos.y = h / 2 - 180;
-console.log(plane.pos.y);
-console.log(w);
-console.log(w-55);
 
 plane.update = function(dt, t) {
     const {pos} = this;
@@ -81,57 +91,46 @@ plane.update = function(dt, t) {
 
 const background = new Sprite(textures.background);
 
+//Add Score to the Game
+const score = new Text("Score", {
+    font: "40px sans-serif",
+    fill: "#8B8994",
+    align: "center"
+});
+
+score.pos.x = 110;
+score.pos.y = 40;
+
 // Add the background and the plane to the screen
 scene.add(background);
 scene.add(plane);
 scene.add(bullets);
 scene.add(baddies);
-
-// for (let i = 0; i < 5; i++) {
-//     const speed = Math.random() * 150 + 50;
-//     const plane = new Sprite(planeTexture);
-//     // plane.pos.x = Math.random() * w;
-//     // plane.pos.y = Math.random() * h;
-//     plane.pos.x = 20;
-//     plane.pos.y = 100;
-    
-//     // plane.update = function(dt) {
-//     //     this.pos.x += speed * dt;
-//     //     if (this.pos.x > w) {
-//     //         this.pos.x = -20;
-//     //     };
-//     // }
-
-//     scene.add(plane);
-    
-// }
-
-//Add Text using Text class
-const message = new Text("Game Engine", {
-    font: "40pt monospace",
-    fill: "red",
-    align: "center"
-});
-
-message.pos.x = w/2;
-message.pos.y = h/2;
-message.update = function(dt) {
-    this.pos.x -= 100 * dt;
-    if (this.pos.x < -420 ) {
-        this.pos.x = w;
-    }
-}
-//scene.add(message);
+scene.add(score);
 
 let dt = 0;
 let last = 0;
-const speed = 64;
+//const speed = 64;
 let p1 = 0;
 let p2 = 0;
 
 let x = w / 2;
 let y = h / 2;
 let color = 10;
+
+//Check Bounding Collision
+function collisionDetection(entity1, entity2) {
+    if (
+    entity1.pos.x+entity1.w >= entity2.pos.x &&
+    entity1.pos.x <= entity2.pos.x+entity2.w &&
+    entity1.pos.y + entity1.h >= entity2.pos.y &&
+    entity1.pos.y <= entity2.pos.y + entity2.h
+    ) {
+        return true;
+    }
+    return false;
+
+}
 
 //ctx.globalAlpha = 0.02;
 
@@ -142,13 +141,30 @@ function loop(ms) {
     const t = ms/1000;
 
     //Game logic
+    score.text = `Score: ${scoreAmount} `;
 
+    //Check for collision between bullets and baddies and check if bullets goes out of screen
+    // ## Using Bounding Box ##
 
-    //Filter out bullets when they go past the screen
-    bullets.children.forEach(bullet => {
-        if (bullet.pos.x > w + 20) {
-            bullet.dead = true;
+    baddies.children.forEach(baddie => {
+        if (collisionDetection(baddie, plane)) {
+            scoreAmount -= 5;
+            baddie.dead = true;
+            explosion(baddie.pos.x, baddie.pos.y);
+            //baddie.dead = true;
+            
+            console.log("Shield compromised");
         }
+        bullets.children.forEach(bullet => {
+            // if (bullet = null) return;
+            //Check distance between baddie and bullet
+            if (collisionDetection(bullet,baddie)) {
+                    scoreAmount += 1;
+                    baddie.dead = true;
+                    explosion(baddie.pos.x, baddie.pos.y);
+
+                }
+        })
     })
 
     if (controls.action && t - lastShot > 0.15) {
@@ -159,21 +175,11 @@ function loop(ms) {
     // Draw the baddies
     if (t - lastBaddie > baddieSpeed) {
         lastBaddie = t;
-        const speed = -50 * (Math.random() * Math.random() + 0.5);
+        const speed = -50 * (Math.random() * 5)
         const position = Math.random() * (h-55);
         baddie(w, position,speed);
-
-        console.log(`Baddie Speed Before ${baddieSpeed}`);
-        baddieSpeed = baddieSpeed < 0.05 ? 0.06 : baddieSpeed * 0.85 + 0.08;
-        console.log(`Baddie Speed After ${baddieSpeed}`);
-        console.log(`Last Baddie Speed: ${lastBaddie}`);
-        console.log(`Value of t : ${t}`);
+        baddieSpeed = baddieSpeed < 0.05 ? 0.06 : baddieSpeed * 0.95;
     }
-
-    // Baddie Speed Before 1
-    // main.js:168 Baddie Speed After 0.9299999999999999
-    // main.js:169 Last Baddie Speed: 1.018551
-    // main.js:170 Value of t : 1.018551
 
 
     //Time elapsed since last frame
