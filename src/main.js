@@ -1,4 +1,5 @@
 import gamedep from "./indexMaster"
+import Player from "../resources/lib/Player";
 
 const {Container, KeyControls, Text, CanvasRenderer, Texture, Sprite} = gamedep;
 
@@ -28,6 +29,8 @@ const textures = {
     baddie: new Texture("../resources/images/alien.png"),
     explosion: new Texture("../resources/images/explosion.png")
 }
+//Add another Player
+const player = new Player();
 
 // Add baddies
 const baddies = new Container();
@@ -107,6 +110,7 @@ scene.add(plane);
 scene.add(bullets);
 scene.add(baddies);
 scene.add(score);
+//scene.add(player);
 
 let dt = 0;
 let last = 0;
